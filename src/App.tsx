@@ -3,17 +3,14 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useForm, SubmitHandler } from "react-hook-form";
 import './App.css';
-
 
 function Copyright(props: any) {
   return (
@@ -29,17 +26,21 @@ function Copyright(props: any) {
 
 const theme = createTheme();
 
+interface IFormInput {
+  firstName: string;
+  lastName: string;
+  age: number;
+}
+
 function SignIn() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    // eslint-disable-next-line no-console
-    console.log({
-      username: data.get('username'),
-      password1: data.get('password1'),
-      password2: data.get('password2'),
-    });
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    getValues
+  } = useForm<IFormInput>({ mode: "onBlur" });
+
+  console.log(errors)
 
   return (
     <ThemeProvider theme={theme}>
@@ -59,42 +60,71 @@ function SignIn() {
           <Typography component="h1" variant="h5">
             Sign in
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit((data: any) => console.log(data))}
+            noValidate
+            sx={{ mt: 1 }}
+            >
             <TextField
               margin="normal"
               required
               fullWidth
               id="username"
               label="Username"
-              name="username"
               autoComplete="username"
               autoFocus
+              { ...{
+                color: errors.username && errors.username.type === "required" ? "error" : "primary",
+                error: errors.username && errors.username.type === "required" ,
+                helperText: errors.username && errors.username.message ? errors.username.message : "",
+              } }
+              {...register("username", { required: "Required field" })}
             />
             <TextField
               margin="normal"
               required
               fullWidth
-              name="password1"
               label="Password"
               type="password"
               id="password1"
               autoComplete="current-password"
+              { ...{
+                color: errors.password1 && errors.password1.type === "required" ? "error" : "primary",
+                error: errors.password1 && errors.password1.type === "required" ,
+                helperText: errors.password1 && errors.password1.message ? errors.password1.message : "",
+              } }
+              {...register("password1", { required: true })}
             />
             <TextField
               margin="normal"
               required
               fullWidth
-              name="password2"
               label="Confirm Password"
               type="password"
               id="password2"
               autoComplete="current-password"
+              { ...{
+                color: errors.password2 && errors.password2.type === "matchesPreviousPassword" ? "error" : "primary",
+                error: errors.password2 && errors.password2.type === "matchesPreviousPassword" ,
+                helperText: errors.password2 && errors.password2.message ? errors.password2.message : "",
+              } }
+              {...register("password2", {
+                required: "Passwords should match!!",
+                validate: {
+                  matchesPreviousPassword: (value: string) => {
+                    const { password1 } = getValues();
+                    return password1 === value || "Passwords should match!";
+                  }
+                }
+              })}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              disabled={Object.keys(errors).length > 0}
             >
               Sign In
             </Button>
