@@ -27,9 +27,9 @@ function Copyright(props: any) {
 const theme = createTheme();
 
 interface IFormInput {
-  firstName: string;
-  lastName: string;
-  age: number;
+  username: string;
+  password1: string;
+  password2: string;
 }
 
 function SignIn() {
